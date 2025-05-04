@@ -1,9 +1,31 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello TclController!{% endblock %}
+{% block title %}Hello TclController!
+{% endblock %}
 
 {% block body %}
-<div>
-    {{ data }}
-</div>
+	<div class='w-full h-full flex-col flex !gap-2 p-8'>
+		{% for stop in data %}
+			{% for route in stop %}
+
+				<div class='w-full bg-red-100 rounded p-2 flex-col gap-2'>
+					<div class="w-full flex gap-2 align-center">
+						<img src='{{ route[0].icon_url}}' class='w-[50px]'/>
+						{{ route[0].stop_name|e }}
+					</div>
+
+					{% for entry in route %}
+						<div>
+							{{ entry.trip_headsign|e }}
+							{{ entry.departure_time|format_datetime('none', 'short', locale: 'fr') }}
+						</div>
+
+					{% endfor %}
+				</div>
+
+			{% endfor %}
+		{% endfor %}
+
+		{{ data|json_encode }}
+	</div>
 {% endblock %}
