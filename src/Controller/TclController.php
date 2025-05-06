@@ -30,7 +30,7 @@ final class TclController extends AbstractController
         EntityManagerInterface $entityManager,
         LoggerInterface $logger
     ): Response {
-        $now = new DateTime('2025-05-04 12:00');
+        $now = new DateTime();
         $dayName = $now->format('l');
 
         $stopList = ['INSA - Einstein', 'Place Croix-Luizet'];
@@ -61,6 +61,8 @@ FROM
 	R.ROUTE_SHORT_NAME,
 	R.ROUTE_LONG_NAME,
     C.' . $dayName . ',
+    C.START_DATE,
+	C.END_DATE,
     R.ROUTE_COLOR
 FROM
 	STOP S,
@@ -76,6 +78,8 @@ WHERE
 	AND T.ROUTE_ID = R.ROUTE_ID
 	AND C.SERVICE_ID = T.SERVICE_ID
 	AND C.' . $dayName . '= \'1\'
+    AND C.START_DATE <= :nowDate
+	AND C.END_DATE >= :nowDate
 ORDER BY ST.DEPARTURE_TIME
 	) A
 WHERE
@@ -83,8 +87,59 @@ WHERE
 
 
 
-        $stopTimes = $conn->executeQuery($sql, ['now' => $now->format('H:i:s')]);
+        $stopTimes = $conn->executeQuery($sql, [
+            'now' => $now->format('H:i:s'),
+            'nowDate' => $now->format('Y-m-d')
+        ]);
         $stopTimes = $stopTimes->fetchAllAssociative();
+
+        $processedTimes = [];
+        $singleRouteName = [];
+
+        $routeStopHashList = [];
+        $routeIdList = [];
+
+        foreach ($stopTimes as $stop) {
+            if (count(array_filter($singleRouteName, fn($value) => $value === $stop['route_long_name'])) >= $timesThreshold)
+                continue;
+            $singleRouteName[] = $stop['route_long_name'];
+
+            $stop['icon_url'] = $this->package->getUrl('/static/tcl_icons/' . $stop['route_short_name'] . '.svg');
+            $stop['route_stop_hash'] = hash('md5', $stop['route_short_name'] . $stop['stop_name']);
+
+            $processedTimes[] = $stop;
+
+            $hashListEntry = [
+                'hash' => $stop['route_stop_hash'],
+                'icon' => $stop['icon_url'],
+                'route_name' => $stop['route_short_name'],
+                'stop_name' => $stop['stop_name'],
+                'route_id' => [$stop['route_id']],
+            ];
+
+            $key = array_find_key($routeStopHashList, fn($value) => $value['hash'] == $stop['route_stop_hash']);
+            if ($key === null)
+                array_push($routeStopHashList, $hashListEntry);
+            else if (!in_array($stop['route_id'], $routeStopHashList[$key]['route_id']))
+                array_push($routeStopHashList[$key]['route_id'], $stop['route_id']);
+
+            // if ($key = array_find_key($processedTimes, function ($value) use ($stop) {
+            //     return (
+            //         ($value['stop_name'] == $stop['stop_name'])
+            //         &&
+            //         ($value['route_short_name'] == $stop['route_short_name'])
+            //     );
+            // })) {
+            //     $processedTimes[$key]['stop_times'][] = $stop;
+            // } else {
+            //     $processedTimes[] = [
+            //         'stop_name' => $stop['stop_name'],
+            //         'route_short_name' => $stop['route_short_name'],
+            //         'icon_url' => $stop['icon_url'],
+            //         'stop_times' => [$stop],
+            //     ];
+            // }
+        }
 
         $filteredTimesList = [];
         $singleRouteName = [];
@@ -98,10 +153,9 @@ WHERE
             $filteredTimesList[$time['stop_name']][$time['route_short_name']][] = $time;
         }
 
-        // return new JsonResponse($filteredTimesList);
-
         return $this->render('tcl/index.html.twig', [
-            'data' => $filteredTimesList
+            'data' => $processedTimes,
+            'route_stop_hash_list' => $routeStopHashList
         ]);
     }
 

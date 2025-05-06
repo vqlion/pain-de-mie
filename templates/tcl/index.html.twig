@@ -1,31 +1,38 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello TclController!
+{% block title %}TCL
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('styles/tcl.css') }}">
 {% endblock %}
 
 {% block body %}
 	<div class='w-full h-full flex-col flex !gap-2 p-8'>
-		{% for stop in data %}
-			{% for route in stop %}
-
-				<div class='w-full bg-red-100 rounded p-2 flex-col gap-2'>
-					<div class="w-full flex gap-2 align-center">
-						<img src='{{ route[0].icon_url}}' class='w-[50px]'/>
-						{{ route[0].stop_name|e }}
-					</div>
-
-					{% for entry in route %}
-						<div>
-							{{ entry.trip_headsign|e }}
-							{{ entry.departure_time|format_datetime('none', 'short', locale: 'fr') }}
-						</div>
-
-					{% endfor %}
+		{% for hash in route_stop_hash_list %}
+			<div class='w-full bg-red-100 rounded p-2 flex-col gap-2 px-4 py-2'>
+				<div class="w-full flex gap-2 mb-4 align-center">
+					<twig:ux:icon name="mdi:map-marker" width="40"/>
+					<h1>{{ hash.stop_name|e }}</h1>
+					<img src='{{ hash.icon}}' width="100" class="ml-4"/>
 				</div>
-
-			{% endfor %}
+				{% for route_id in hash.route_id %}
+					<div class='w-full flex' style="justify-content: space-between;">
+						<span class="flex gap-2 align-center">
+							{{ (data|find(e => e.route_id == route_id)).trip_headsign }}
+						</span>
+						<div>
+							{% for route_stop in data|filter(s => (s.route_stop_hash == hash.hash) and (s.route_id == route_id)) %}
+								<span class="flex gap-2 align-center">
+									<twig:ux:icon name="mdi:clock-outline" width="30"/>
+									{{ route_stop.departure_time|format_datetime('none', 'short', locale: 'fr') }}
+								</span>
+							{% endfor %}
+						</div>
+					</div>
+				{% endfor %}
+			</div>
 		{% endfor %}
 
-		{{ data|json_encode }}
 	</div>
 {% endblock %}
