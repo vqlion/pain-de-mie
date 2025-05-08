@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Velov{% endblock %}
+
+{% block body %}
+<twig:NavBar />
+{{ data|json_encode }}
+{% endblock %}
