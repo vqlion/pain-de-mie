@@ -8,31 +8,41 @@
 {% endblock %}
 
 {% block body %}
-	<div class='w-full h-full flex-col flex !gap-2 p-8'>
+	<div class='w-full h-full flex-col flex items-center !gap-2 p-8'>
+		<div id="time" class="text-xl font-bold">
+			{{ date('now')|date('H:i:s') }}
+		</div>
 		{% for hash in route_stop_hash_list %}
 			<div class='w-full bg-red-100 rounded p-2 flex-col gap-2 px-4 py-2'>
-				<div class="w-full flex gap-2 mb-4 align-center">
-					<twig:ux:icon name="mdi:map-marker" width="40"/>
+				<div class="w-full flex gap-1 mb-4 items-center">
+					<img src='{{ hash.icon}}' class="h-[2rem] mr-3"/>
+					<twig:ux:icon name="mdi:map-marker" class="h-[2rem]"/>
 					<h1>{{ hash.stop_name|e }}</h1>
-					<img src='{{ hash.icon}}' width="100" class="ml-4"/>
 				</div>
 				{% for route_id in hash.route_id %}
-					<div class='w-full flex' style="justify-content: space-between;">
-						<span class="flex gap-2 align-center">
+					<div class='w-full flex justify-between'>
+						<span class="flex gap-2 items-center">
+							<twig:ux:icon name="mdi:arrow-right-bold-circle-outline" class="h-[2rem]"/>
 							{{ (data|find(e => e.route_id == route_id)).trip_headsign }}
 						</span>
-						<div>
-							{% for route_stop in data|filter(s => (s.route_stop_hash == hash.hash) and (s.route_id == route_id)) %}
-								<span class="flex gap-2 align-center">
-									<twig:ux:icon name="mdi:clock-outline" width="30"/>
-									{{ route_stop.departure_time|format_datetime('none', 'short', locale: 'fr') }}
-								</span>
-							{% endfor %}
+						<div class="flex gap-4 align-center">
+							<span class="flex gap-8 align-center">
+								{% for route_stop in data|filter(s => (s.route_stop_hash == hash.hash) and (s.route_id == route_id)) %}
+									<span>
+										{{ route_stop.departure_time|format_datetime('none', 'short', locale: 'fr') }}
+									</span>
+								{% endfor %}
+							</span>
 						</div>
 					</div>
 				{% endfor %}
 			</div>
 		{% endfor %}
-
 	</div>
+	<script>
+		const timeDiv = $('#time');
+		setInterval(() => {
+		timeDiv.text(moment().format('HH:mm:ss'));
+		}, 500);
+	</script>
 {% endblock %}
