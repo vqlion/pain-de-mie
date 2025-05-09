@@ -23,6 +23,8 @@ final class TclController extends AbstractController
     private string $tramRegex;
     private string $metroRegex;
     private string $CBusRegex;
+    private array $stopList;
+    private int $timesThreshold;
 
 
     public function __construct()
@@ -32,6 +34,9 @@ final class TclController extends AbstractController
         $this->tramRegex = '/^(T|BRT)[0-9]+$/';
         $this->metroRegex = '/^[A-Z]$/';
         $this->CBusRegex = '/^C[0-9]+$/';
+        $jsonTclStops = file_get_contents('../public/static/json/tcl_stops.json');
+        $this->stopList = json_decode($jsonTclStops, true);
+        $this->timesThreshold = 2;
     }
 
     #[Route('/tcl', name: 'app_tcl')]
@@ -40,11 +45,6 @@ final class TclController extends AbstractController
     ): Response {
         $now = new DateTime();
         $dayName = $now->format('l');
-
-        $jsonTclStops = file_get_contents('../public/static/json/tcl_stops.json');
-        $stopList = json_decode($jsonTclStops, true);
-
-        $timesThreshold = 2;
 
         $conn = $entityManager->getConnection();
 
@@ -80,7 +80,7 @@ FROM
 	ROUTES R,
 	CALENDAR C
 WHERE
-	S.STOP_NAME IN ' . $this->formatListToSQL(array_map(fn($value) => $value['name'], $stopList)) . '
+	S.STOP_NAME IN ' . $this->formatListToSQL(array_map(fn($value) => $value['name'], $this->stopList)) . '
 	AND ST.STOP_ID = S.STOP_ID
 	AND ST.DEPARTURE_TIME > :now
 	AND T.TRIP_ID = ST.TRIP_ID
@@ -106,15 +106,16 @@ WHERE
         $routeStopHashList = [];
 
         foreach ($stopTimes as $stop) {
-            $stopTimeEntry = array_find($stopList, fn($value) => $value['name'] == $stop['stop_name']);
+            $stopTimeEntry = array_find($this->stopList, fn($value) => $value['name'] == $stop['stop_name']);
             if ($stopTimeEntry['lines'][0] !== '*' && !in_array($stop['route_short_name'], $stopTimeEntry['lines']))
                 continue;
 
             if (count(array_filter(
                 $singleRouteName,
                 fn($value) => $value['route_long_name'] === $stop['route_long_name'] && $value['stop_name'] === $stop['stop_name']
-            )) >= $timesThreshold)
+            )) >= $this->timesThreshold)
                 continue;
+
             $singleRouteName[] = [
                 'route_long_name' => $stop['route_long_name'],
                 'stop_name' => $stop['stop_name'],
@@ -138,18 +139,6 @@ WHERE
                 array_push($routeStopHashList, $hashListEntry);
             else if (!in_array($stop['route_id'], $routeStopHashList[$key]['route_id']))
                 array_push($routeStopHashList[$key]['route_id'], $stop['route_id']);
-        }
-
-        $filteredTimesList = [];
-        $singleRouteName = [];
-        foreach ($stopTimes as $time) {
-            if (count(array_filter($singleRouteName, fn($value) => $value === $time['route_long_name'])) >= $timesThreshold)
-                continue;
-            $singleRouteName[] = $time['route_long_name'];
-
-            $time['icon_url'] = $this->package->getUrl('/static/tcl_icons/' . $time['route_short_name'] . '.svg');
-
-            $filteredTimesList[$time['stop_name']][$time['route_short_name']][] = $time;
         }
 
         $routeStopHashList = $this->sortRoutes($routeStopHashList);

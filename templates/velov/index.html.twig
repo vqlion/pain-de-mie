@@ -1,8 +1,36 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Velov{% endblock %}
+{% block title %}Velov
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
+{% endblock %}
 
 {% block body %}
-<twig:NavBar />
-{{ data|json_encode }}
+	<twig:NavBar/>
+	<div class="mt-20 w-full h-full flex flex-col items-center !gap-4 p-4">
+		{% for stop in data %}
+			<div class='w-full bg-red-100 rounded p-2 flex-col gap-2 px-4 py-2'>
+				<div class="w-full flex gap-1 mb-4 items-center">
+					<twig:ux:icon name="mdi:map-marker" class="h-[2rem]" color="red"/>
+					<h1>{{ stop.name }}</h1>
+				</div>
+				<div class="flex gap-4 items-center">
+					<span class="flex gap-2 items-center">
+						{{ stop.total_stands.availabilities.mechanicalBikes }}
+                        <twig:ux:icon name="mdi:bicycle" class="h-[2.5rem]"/>
+					</span>
+					<span class="flex gap-2 items-center">
+						{{ stop.total_stands.availabilities.electricalBikes }}
+                        <twig:ux:icon name="mdi:bicycle-electric" class="h-[2.5rem]"/>
+					</span>
+					<span class="flex gap-2 items-center">
+						{{ stop.total_stands.availabilities.stands }}
+                        <twig:ux:icon name="mdi:parking" class="h-[2rem]"/>
+					</span>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
 {% endblock %}
