@@ -19,18 +19,20 @@
 				<div class="flex gap-4 items-center">
 					<span class="flex gap-2 items-center">
 						{{ stop.total_stands.availabilities.mechanicalBikes }}
-                        <twig:ux:icon name="mdi:bicycle" class="h-[2.5rem]"/>
+						<twig:ux:icon name="mdi:bicycle" class="h-[2.5rem]"/>
 					</span>
 					<span class="flex gap-2 items-center">
 						{{ stop.total_stands.availabilities.electricalBikes }}
-                        <twig:ux:icon name="mdi:bicycle-electric" class="h-[2.5rem]"/>
+						<twig:ux:icon name="mdi:bicycle-electric" class="h-[2.5rem]"/>
 					</span>
 					<span class="flex gap-2 items-center">
 						{{ stop.total_stands.availabilities.stands }}
-                        <twig:ux:icon name="mdi:parking" class="h-[2rem]"/>
+						<twig:ux:icon name="mdi:parking" class="h-[2rem]"/>
 					</span>
 				</div>
 			</div>
 		{% endfor %}
 	</div>
+	<script type="text/javascript" src="{{ asset('js/autoreload.js') }}"></script>
+
 {% endblock %}

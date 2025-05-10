@@ -29,6 +29,11 @@ final class NavBar
                 'name' => 'Velov',
                 'link' => '/velov',
                 'icon' => $this->package->getUrl('/static/logos/velov.svg'),
+            ],
+            [
+                'name' => 'Meteo',
+                'link' => '/meteo',
+                'icon' => $this->package->getUrl('/static/logos/meteo.svg'),
             ]
         ];
     }

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    setInterval(() => {
+    setTimeout(() => {
         location.reload();
     }, 30000);
 }); 

@@ -56,12 +56,6 @@ FROM
 		SELECT
 	S.STOP_NAME,
 	ST.DEPARTURE_TIME,
-    ROW_NUMBER() OVER (
-				PARTITION BY
-					ST.DEPARTURE_TIME
-				ORDER BY
-					ST.ID DESC
-			) RN,
 	S.STOP_ID,
 	T.TRIP_ID,
 	T.SERVICE_ID,
@@ -89,10 +83,8 @@ WHERE
 	AND C.' . $dayName . '= \'1\'
     AND C.START_DATE <= :nowDate
 	AND C.END_DATE >= :nowDate
-ORDER BY ST.DEPARTURE_TIME, S.STOP_NAME
-	) A
-WHERE
-	RN = 1';
+ORDER BY R.ROUTE_SHORT_NAME, ST.DEPARTURE_TIME
+	)';
 
         $stopTimes = $conn->executeQuery($sql, [
             'now' => $now->format('H:i:s'),
