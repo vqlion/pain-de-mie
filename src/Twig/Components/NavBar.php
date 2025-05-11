@@ -34,6 +34,11 @@ final class NavBar
                 'name' => 'Meteo',
                 'link' => '/meteo',
                 'icon' => $this->package->getUrl('/static/logos/meteo.svg'),
+            ],
+            [
+                'name' => 'Wifi',
+                'link' => '/livebox',
+                'icon' => $this->package->getUrl('/static/logos/wifi.svg'),
             ]
         ];
     }

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Livebox
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
+{% endblock %}
+
+{% block body %}
+	<twig:NavBar/>
+	<div class="mt-20 flex flex-col justify-center items-center">
+		<img src="{{ qrcode }}" width="400"/>
+		<span class="flex gap-2 items-center mb-2">
+			<twig:ux:icon name="mdi:wifi" class="h-[2rem]"/>
+			{{ data.ssid }}
+		</span>
+		<span class="flex gap-2 items-center text-lg">
+			<twig:ux:icon name="mdi:lock" class="h-[2rem]"/>
+			{{ data.password }}
+		</span>
+	</div>
+{% endblock %}
