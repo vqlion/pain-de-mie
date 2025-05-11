@@ -1,22 +1,17 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Meteo{% endblock %}
+{% block title %}Meteo
+{% endblock %}
 
 {% block stylesheets %}
-<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
+	<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
 {% endblock %}
 
 {% block body %}
-<twig:NavBar />
-<div class="flex justify-center items-center flex-wrap mt-20 py-4 px-20 gap-4">
-    <iframe id="widget_autocomplete_preview" width="400" class="pointer-events-none" frameborder="0"
-        src="https://meteofrance.com/widget/prevision/692660##7D85E2" title="Prévisions Villeurbanne par Météo-France">
-    </iframe>
-    <iframe id="widget_autocomplete_preview" width="400" class="pointer-events-none" frameborder="0"
-        src="https://meteofrance.com/widget/prevision/940420##7D85E2"
-        title="Prévisions Joinville-le-Pont par Météo-France"> </iframe>
-    <iframe id="widget_autocomplete_preview" width="400" class="pointer-events-none" frameborder="0"
-        src="https://meteofrance.com/widget/prevision/060880##7D85E2" title="Prévisions Nice par Météo-France">
-    </iframe>
-</div>
+	<twig:NavBar/>
+	<div class="flex justify-center items-center flex-wrap mt-20 py-4 px-20 gap-4">
+		{% for item in data %}
+			<iframe id="widget_autocomplete_preview" width="400" class="pointer-events-none" frameborder="0" src="{{ item }}" title="Prévisions Météo-France"></iframe>
+		{% endfor %}
+	</div>
 {% endblock %}
