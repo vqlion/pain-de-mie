@@ -56,6 +56,19 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+  # pgadmin:
+  #   image: dpage/pgadmin4:9.3
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_MAIL}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+  #     PGADMIN_LISTEN_PORT: 80
+  #   ports:
+  #     - 15432:80
+  #   volumes:
+  #     - pgadmin:/var/lib/pgadmin
+  #   depends_on:
+  #     - database
+
 volumes:
   caddy_data:
   caddy_config:

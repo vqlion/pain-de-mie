@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}News{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
+{% endblock %}
+
+{% block body %}
+<twig:NavBar />
+
+<div class="mt-20 px-4 w-full text-center" id="date">Dernière mise à jour : </div>
+<div class="w-full h-full p-4 flex-col flex !gap-4" id="wrapper">
+
+</div>
+
+<script>
+    const RSS_URL = `https://www.franceinfo.fr/titres.rss`;
+
+    $.ajax(RSS_URL, {
+        accepts: {
+            xml: "application/rss+xml"
+        },
+
+        dataType: "xml",
+
+        success: function (data) {
+            console.debug($(data).find('pubDate')[0].innerHTML)
+            $("#date").append(moment($(data).find('pubDate')[0].innerHTML).format('DD/MM/YY HH:mm'))
+            $(data)
+                .find("item")
+                .each(function () {
+                    const el = $(this);
+                    const template = `
+                        <article class="bg-red-100 rounded p-4 flex gap-2">
+                            <img src="${el.find('enclosure')[0].getAttribute('url')}" width="200"/>
+                            <h2 class="">
+                                ${el.find("title").text()}
+                            </h2>
+                        </article>
+                        `;
+
+                    $('#wrapper').append(template);
+                });
+        }
+    });
+
+</script>
+<script type="text/javascript" src="{{ asset('js/autoreload.js') }}"></script>
+
+
+{% endblock %}
