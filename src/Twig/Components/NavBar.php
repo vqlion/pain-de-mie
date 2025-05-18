@@ -35,6 +35,11 @@ final class NavBar
                 'link' => '/news',
                 'icon' => $this->package->getUrl('/static/logos/newspaper.svg'),
             ],
+            [
+                'name' => 'Radio',
+                'link' => '/radio',
+                'icon' => $this->package->getUrl('/static/logos/radio.svg'),
+            ],
             // [
             //     'name' => 'Meteo',
             //     'link' => '/meteo',

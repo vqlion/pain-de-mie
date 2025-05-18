@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Radio{% endblock %}
+
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('styles/page.css') }}">
+{% endblock %}
+
+{% block body %}
+<twig:NavBar />
+<div class="mt-4 w-full h-full flex flex-col !gap-4 p-4">
+    <iframe src="https://embed.radiofrance.fr/franceinfo" class="w-full"></iframe>
+    <iframe src="https://embed.radiofrance.fr/franceinter" class="w-full"></iframe>
+    <iframe src="https://embed.radiofrance.fr/francemusique" class="w-full"></iframe>
+    <iframe src="https://embed.radiofrance.fr/franceculture" class="w-full"></iframe>
+    <iframe src="https://embed.radiofrance.fr/mouv" class="w-full"></iframe>
+    <iframe src="https://embed.radiofrance.fr/fip" class="w-full"></iframe>
+</div>
+{% endblock %}
