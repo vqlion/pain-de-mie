@@ -9,7 +9,7 @@
 {% block body %}
 <twig:NavBar />
 
-<div class="mt-20 px-4 w-full text-center" id="date">Dernière mise à jour : </div>
+<div class="mt-4 px-4 w-full text-center" id="date">Dernière mise à jour : </div>
 <div class="w-full h-full p-4 flex-col flex !gap-4" id="wrapper">
 
 </div>
@@ -34,7 +34,7 @@
                     const template = `
                         <article class="bg-red-100 rounded p-4 flex gap-2">
                             <img src="${el.find('enclosure')[0].getAttribute('url')}" width="200"/>
-                            <h2 class="">
+                            <h2 class="text-lg">
                                 ${el.find("title").text()}
                             </h2>
                         </article>
