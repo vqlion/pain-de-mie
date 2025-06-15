@@ -26,9 +26,8 @@ final class VelovController extends AbstractController
     ): Response {
         $response = $client->request('GET', $_ENV['VELOV_TEMPSREEL_URL']);
 
-        $data = json_decode($response->getContent(), true);
-
-        $stops = array_filter($data['values'], fn($value) => in_array($value['number'], $this->stopList));
+        $data = json_decode(str_replace('\"', '', $response->getContent()), true);
+        $stops = array_filter($data['values'], fn($value) => in_array($value['number'] ?? null, $this->stopList));
         $stops = array_values($stops);
         usort($stops, function($a, $b) {
             $aKey = array_search($a['number'], $this->stopList);
