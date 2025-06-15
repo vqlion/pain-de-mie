@@ -30,6 +30,7 @@ class ImportTclDataCommand extends Command
     private ZipArchive $zip;
 
     private array $files;
+    private array $stopList;
 
     public function __construct(
         private HttpClientInterface $client,
@@ -38,6 +39,11 @@ class ImportTclDataCommand extends Command
     ) {
         $this->zip = new ZipArchive;
         $this->files = [
+            [
+                'name' => "stops.txt",
+                'entity' => Stop::class,
+                'columns' => ['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'location_type', 'parent_station', 'wheelchair_boarding']
+            ],
             [
                 'name' => "stop_times.txt",
                 'entity' => StopTime::class,
@@ -59,16 +65,13 @@ class ImportTclDataCommand extends Command
                 'columns' => ['route_id', 'agency_id', 'route_short_name', 'route_long_name', 'route_desc', 'route_type', 'route_color']
             ],
             [
-                'name' => "stops.txt",
-                'entity' => Stop::class,
-                'columns' => ['stop_id', 'stop_name', 'stop_lat', 'stop_lon', 'location_type', 'parent_station', 'wheelchair_boarding']
-            ],
-            [
                 'name' => "trips.txt",
                 'entity' => Trip::class,
                 'columns' => ['route_id', 'service_id', 'trip_id', 'trip_headsign', 'wheelchair_accessible']
             ],
         ];
+        $jsonTclStops = file_get_contents('./public/static/json/tcl_stops.json');
+        $this->stopList = json_decode($jsonTclStops, true);
         parent::__construct();
     }
 
@@ -106,9 +109,22 @@ class ImportTclDataCommand extends Command
             return Command::FAILURE;
         }
 
+        $acceptedStopIds = [];
+        $acceptedTripIds = [];
+        $stopListNames = array_map(fn($value) => $value['name'], $this->stopList);
+        $handlingStops = false;
+        $handlingStopTimes = false;
         foreach ($this->files as $file) {
+            $handlingStops = false;
+            $handlingStopTimes = false;
             $entityClass = $file['entity'];
             $output->writeln("Handling " . $file['name'] . ", entity " . $entityClass . "...");
+            if ($file['name'] === 'stops.txt') {
+                $handlingStops = true;
+            }
+            if ($file['name'] === 'stop_times.txt') {
+                $handlingStopTimes = true;
+            }
 
             $repo = $this->entityManager->getRepository($entityClass);
             $repo->createQueryBuilder('deleter')->delete()->getQuery()->execute();
@@ -116,6 +132,7 @@ class ImportTclDataCommand extends Command
             $counter = 0;
 
             foreach ($this->parseCsvGenerator($file['name']) as $row) {
+                $keepEntity = true;
                 $attributes = [];
                 if ($row && $row != $file['columns']) {
                     foreach ($row as $key => $column) {
@@ -123,12 +140,30 @@ class ImportTclDataCommand extends Command
                         if ($attributeName === "arrival_time" || $attributeName === "departure_time") {
                             $column = DateTime::createFromFormat('H:i:s', $column);
                         }
+                        if ($handlingStops && $attributeName === 'stop_name') {
+                            if (!in_array($column, $stopListNames)) {
+                                $keepEntity = false;
+                            }
+                        }
+                        if (!$handlingStops && $attributeName === 'stop_id' && !in_array($column, $acceptedStopIds)) {
+                            $keepEntity = false;
+                        }
+                        if (!$handlingStopTimes && $attributeName === 'trip_id' && !in_array($column, $acceptedTripIds)) {
+                            $keepEntity = false;
+                        }
                         $attributes[$file['columns'][$key]] = $column;
                     }
                     $jsonContent = $this->serializerInterface->serialize($attributes, 'json');
                     $entity = $this->serializerInterface->deserialize($jsonContent, $entityClass, 'json');
 
-                    $this->entityManager->persist($entity);
+                    if ($handlingStops && $keepEntity) {
+                        $acceptedStopIds[] = $entity->getStopId();
+                    }
+                    if ($handlingStopTimes && $keepEntity) {
+                        $acceptedTripIds[] = $entity->getTripId();
+                    }
+
+                    if ($keepEntity) $this->entityManager->persist($entity);
                     $counter++;
                     if ($counter >= 1000) {
                         $counter = 0;
